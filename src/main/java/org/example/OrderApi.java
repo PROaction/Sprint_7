@@ -1,5 +1,6 @@
 package org.example;
 
+import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import org.example.models.requests.OrderCreateRequest;
 import org.example.models.responses.OrdersCreateResponse;
@@ -12,6 +13,7 @@ public class OrderApi extends BaseHttpClient {
 
     private final String apiPath = "/api/v1/orders";
 
+    @Step("Создание заказа")
     public Response createOrder(
             String firstName,
             String lastName,
@@ -38,12 +40,14 @@ public class OrderApi extends BaseHttpClient {
         return doPostRequest(apiPath, request);
     }
 
+    @Step("Приемка заказа курьером")
     public Response acceptOrder(Long orderId, Long courierId) {
         Map<String, Object> params = new HashMap<>();
         params.put("courierId", courierId);
         return doPutRequest(apiPath + "/accept/" + orderId, params);
     }
 
+    @Step("Получение всех заказов по id заказа")
     public Response getOrders(Long courierId) {
         Map<String, Object> params = new HashMap<>();
         params.put("courierId", courierId);

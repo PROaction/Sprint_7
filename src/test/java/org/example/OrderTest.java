@@ -1,5 +1,6 @@
 package org.example;
 
+import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import org.example.models.responses.*;
 import org.junit.jupiter.api.*;
@@ -8,6 +9,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.EmptySource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,13 +38,15 @@ public class OrderTest {
     @ParameterizedTest()
     @CsvSource({
             "BLACK",
-            "GRAY"
+            "GRAY",
+            "BLACK and GRAY"
     })
     @EmptySource
     public void testCreateOrderWithTwoColors(String colorElement) {
         List<String> color = new ArrayList<>();
         if (colorElement != null && !colorElement.isEmpty()) {
-            color.add(colorElement);
+            String[] colors = colorElement.split("and");
+            color.addAll(Arrays.asList(colors));
         }
         Response response = orderApi.createOrder(
                 firstName,
@@ -67,7 +71,7 @@ public class OrderTest {
         Response responseCourier = courierApi.createCourier(login, password, firstName);
         assertEquals(201, responseCourier.statusCode());
 
-        CourierCreateResponse courier = responseCourier.then().extract().body().as(CourierCreateResponse.class);
+        DefaultSuccessResponse courier = responseCourier.then().extract().body().as(DefaultSuccessResponse.class);
         assertTrue(courier.isOk());
 
         // Логин курьера и получение его id
@@ -100,7 +104,7 @@ public class OrderTest {
         Response responseAcceptOrder = orderApi.acceptOrder(orderId, courierId);
         assertEquals(200, responseAcceptOrder.statusCode());
 
-        OrdersAcceptResponse acceptOrder = responseAcceptOrder.then().extract().body().as(OrdersAcceptResponse.class);
+        DefaultSuccessResponse acceptOrder = responseAcceptOrder.then().extract().body().as(DefaultSuccessResponse.class);
         assertTrue(acceptOrder.isOk());
 
         // Получение списка заказов по курьеру
@@ -112,19 +116,17 @@ public class OrderTest {
     }
 
     @AfterEach
+    @Step("tearDown")
     void tearDown(TestInfo testInfo) {
-        System.out.println("TestInfo: " + testInfo);
-        System.out.println("Tags: " + testInfo.getTags());
-
         if (testInfo.getDisplayName().equals("testGetOrderList()")) {
             CourierLoginResponse loginResponse = courierApi
                     .loginCourier(login, password)
                     .then().extract().body().as(CourierLoginResponse.class);
             Long courierId = loginResponse.getId();
 
-            CourierDeleteIdResponse deleteResponse = courierApi
+            DefaultSuccessResponse deleteResponse = courierApi
                     .deleteCourier(Long.toString(courierId))
-                    .then().extract().body().as(CourierDeleteIdResponse.class);
+                    .then().extract().body().as(DefaultSuccessResponse.class);
 
             assertTrue(deleteResponse.isOk());
         }

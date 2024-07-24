@@ -1,8 +1,9 @@
 package org.example;
 
+import io.qameta.allure.Step;
 import io.restassured.response.Response;
-import org.example.models.responses.CourierCreateResponse;
-import org.example.models.responses.CourierDeleteIdResponse;
+import org.example.models.responses.DefaultSuccessResponse;
+import org.example.models.responses.DefaultSuccessResponse;
 import org.example.models.responses.CourierLoginResponse;
 import org.example.models.responses.ErrorResponse;
 import org.junit.jupiter.api.AfterEach;
@@ -40,7 +41,7 @@ public class CourierTest
         Response response = courierApi.createCourier(login, password, firstName);
         assertEquals(201, response.statusCode());
 
-        CourierCreateResponse courierResponse = response.then().extract().body().as(CourierCreateResponse.class);
+        DefaultSuccessResponse courierResponse = response.then().extract().body().as(DefaultSuccessResponse.class);
         assertTrue(courierResponse.isOk());
     }
 
@@ -50,7 +51,7 @@ public class CourierTest
         Response response = courierApi.createCourier(login, password, firstName);
         assertEquals(201, response.statusCode());
 
-        CourierCreateResponse courierResponse = response.then().extract().body().as(CourierCreateResponse.class);
+        DefaultSuccessResponse courierResponse = response.then().extract().body().as(DefaultSuccessResponse.class);
         assertTrue(courierResponse.isOk());
 
         Response responseTwo = courierApi.createCourier(login, password, firstName);
@@ -76,7 +77,7 @@ public class CourierTest
         Response responseCourier = courierApi.createCourier(login, password, firstName);
         assertEquals(201, responseCourier.statusCode());
 
-        CourierCreateResponse courierResponse = responseCourier.then().extract().body().as(CourierCreateResponse.class);
+        DefaultSuccessResponse courierResponse = responseCourier.then().extract().body().as(DefaultSuccessResponse.class);
         assertTrue(courierResponse.isOk());
 
         Response responseLogin = courierApi.loginCourier(login, password);
@@ -93,7 +94,7 @@ public class CourierTest
         Response responseCourier = courierApi.createCourier(CourierTest.login, CourierTest.password, firstName);
         assertEquals(201, responseCourier.statusCode());
 
-        CourierCreateResponse courierResponse = responseCourier.then().extract().body().as(CourierCreateResponse.class);
+        DefaultSuccessResponse courierResponse = responseCourier.then().extract().body().as(DefaultSuccessResponse.class);
         assertTrue(courierResponse.isOk());
 
         Response response = courierApi.loginCourier(login, password);
@@ -113,7 +114,7 @@ public class CourierTest
         Response responseCourier = courierApi.createCourier(CourierTest.login, CourierTest.password, firstName);
         assertEquals(201, responseCourier.statusCode());
 
-        CourierCreateResponse courierResponse = responseCourier.then().extract().body().as(CourierCreateResponse.class);
+        DefaultSuccessResponse courierResponse = responseCourier.then().extract().body().as(DefaultSuccessResponse.class);
         assertTrue(courierResponse.isOk());
 
         Response response = courierApi.loginCourier(login, password);
@@ -124,18 +125,17 @@ public class CourierTest
     }
 
     @AfterEach
+    @Step("tearDown")
     public void tearDown() {
         Response response = courierApi.loginCourier(login, password);
 
         if (response.statusCode() == 200) {
-            CourierLoginResponse loginResponse = courierApi
-                    .loginCourier(login, password)
-                    .then().extract().body().as(CourierLoginResponse.class);
+            CourierLoginResponse loginResponse = response.then().extract().body().as(CourierLoginResponse.class);
             Long courierId = loginResponse.getId();
 
-            CourierDeleteIdResponse deleteResponse = courierApi
+            DefaultSuccessResponse deleteResponse = courierApi
                     .deleteCourier(Long.toString(courierId))
-                    .then().extract().body().as(CourierDeleteIdResponse.class);
+                    .then().extract().body().as(DefaultSuccessResponse.class);
 
             assertTrue(deleteResponse.isOk());
         }
